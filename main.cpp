@@ -1,8 +1,8 @@
 #include <iostream>
-#include <iomanip>
+#include <iomanip>		// -- pt aproximarea zecimalelor
 #include "structs.h"
 #include "Part.h"
-#include <time.h>
+#include <time.h>		
 #include <Windows.h>
 #include <vector>
 
@@ -14,11 +14,9 @@ void Update(vector<Part>&);  // - while infinit in care se updateaza pozitia obi
 int main(){
 	vector<Part> parts_vector;
 
-	Part a(Vector3(10,0,500),10);
-	Part b(Vector3(0,10,5000),5);
+	Part a(Vector3(10, 0, 500), 10);
 	
 	parts_vector.push_back(a);
-	parts_vector.push_back(b);
 
 	Update(parts_vector);
 
@@ -38,6 +36,8 @@ void Update(vector<Part>& P) {
 	while (true) {
 		time = (clock() - time) / 850;   // -- aproximatie sa dea in secunde, nu stiu cat de buna e
 
+		cout << "Time: " << time << "  ";
+
 		for (unsigned int i = 0; i < parts_nr ; i++) // -- updatare pozitie a fiecarui obiect
 		{
 			if (P[i].getPosition().f.z > 0) {						// -- verifica daca obiectul se afla deasupra pamantului
@@ -50,8 +50,8 @@ void Update(vector<Part>& P) {
 
 			P[i].setPosition(P[i].getPosition().add(P[i].getSpeed()));	// -- updateaza coordonatele obiectului pe baza vitezei in secunda respectiva
 
-			cout << setprecision(2) << fixed << "         " << "Time:" << time << " " << P[i].getPosition().toString() << "            ";
-			Sleep(100);
+			cout << setprecision(2) << fixed << i+1 <<") "<< P[i].getPosition().toString() << "  ";   //- afisare
+			Sleep(50);
 
 		}
 

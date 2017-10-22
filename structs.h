@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <iomanip>
 
 
 
@@ -39,19 +40,30 @@ union Vector3 {
 	std::string toString()
 	{
 		std::ostringstream output;
-		output << f.x << " " << f.y << " " << f.z << " ";
+		output << std::setprecision(2) << std::fixed << f.x << " " << f.y << " " << f.z << " ";
 		return output.str();
 	}
 	
 	//Operatori
 
 	Vector3 add(Vector3 other) {             //  -- adauga vectorului3 curent un alt vector, returneaza un vector3 nou.
-		Vector3 result(0,0,0);							//Ex: c = a.add(b)     , abc Vectori3                          
-			result.f.x = other.f.x + f.x;
-			result.f.y = other.f.y + f.y;
-			result.f.z = other.f.z + f.z;
+		Vector3 result(0,0,0);                 //Ex: c = a.add(b)     , abc Vectori3 
 
-			return result;
+		result.f.x = other.f.x + f.x;
+		result.f.y = other.f.y + f.y;
+		result.f.z = other.f.z + f.z;
+
+		return result;
+	}
+
+	Vector3 subtract(Vector3 other){
+		Vector3 result(0, 0, 0);
+
+		result.f.x = other.f.x + f.x;
+		result.f.y = other.f.y + f.y;
+		result.f.z = other.f.z + f.z;
+
+		return result;
 	}
 
 
