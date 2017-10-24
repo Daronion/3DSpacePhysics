@@ -14,13 +14,12 @@ void Update(vector<Part>&);  // - while infinit in care se updateaza pozitia obi
 int main(){
 	vector<Part> parts_vector;
 
-	Part a(Vector3(10, 0, 500), 10);
+	Part a(Vector3(10, 0, 5000), 10);
 	
 	parts_vector.push_back(a);
 
 	Update(parts_vector);
 
-	cout << a.getPosition().add(b.getPosition()).toString();
 	cin.get();
 
 	return 0;
@@ -50,7 +49,7 @@ void Update(vector<Part>& P) {
 
 			P[i].setPosition(P[i].getPosition().add(P[i].getSpeed()));	// -- updateaza coordonatele obiectului pe baza vitezei in secunda respectiva
 
-			cout << setprecision(2) << fixed << i+1 <<") "<< P[i].getPosition().toString() << "  ";   //- afisare
+			cout << setprecision(2) << fixed << i + 1 << ") " << P[i].getPosition().toString() << "  " << P[i].getSpeed().toString()<<  "    ";   //- afisare
 			Sleep(50);
 
 		}

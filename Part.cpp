@@ -1,9 +1,12 @@
 #include "Part.h"
+#include <time.h>
 
 Part::Part()
 {
 	Position = Vector3(0, 0, 0);
 	Rotation = Vector3(0, 0, 0);
+	AngAcc = Vector3(0, 0, 0);
+	AngVel = Vector3(0, 0, 0);
 	Speed = Vector3(0, 0, 0);
 	Acc = Vector3(0, 0, 0);
 	mass = 1;
@@ -13,6 +16,8 @@ Part::Part(Vector3 pos, float given_mass)
 {
 	Position = pos;
 	Rotation = Vector3(0, 0, 0);
+	AngAcc = Vector3(0, 0, 0);
+	AngVel = Vector3(0, 0, 0);
 	Speed = Vector3(0, 0, 0);
 	Acc = Vector3(0, 0, 0);
 
@@ -22,6 +27,12 @@ Part::Part(Vector3 pos, float given_mass)
 Part::Part(float given_mass)
 {
 	mass = given_mass;
+	Position = Vector3(0, 0, 0);
+	Rotation = Vector3(0, 0, 0);
+	AngAcc = Vector3(0, 0, 0);
+	AngVel = Vector3(0, 0, 0);
+	Speed = Vector3(0, 0, 0);
+	Acc = Vector3(0, 0, 0);
 }
 
 //Accessors
@@ -41,6 +52,15 @@ Vector3 Part::getRotation()
 	return Rotation;
 }
 
+Vector3 Part::getAngVel()
+{
+	return AngVel;
+}
+
+Vector3 Part::getAngAcc()
+{
+	return AngAcc;
+}
 
 Vector3 Part::getSpeed()
 {
@@ -69,6 +89,16 @@ void Part::setRotation(Vector3 g_rot)
 	Rotation = g_rot;
 }
 
+void Part::setAngVel(Vector3 g_angvel)
+{
+	AngVel = g_angvel;
+}
+
+void Part::setAngAcc(Vector3 g_angacc)
+{
+	AngAcc = g_angacc;
+}
+
 void Part::setSpeed(Vector3 g_speed)
 {
 	Speed = g_speed;
@@ -77,6 +107,11 @@ void Part::setSpeed(Vector3 g_speed)
 void Part::setAcc(Vector3 g_acc)
 {
 	Acc = g_acc;
+}
+
+void Part::addForce(Vector3 dir, int duration)
+{
+	
 }
 
 Part::~Part()
