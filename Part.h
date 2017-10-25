@@ -36,8 +36,10 @@ public:
 	void setAngAcc(Vector3);
 
 	//
-
-	void addForce(Vector3, int);
+	void addForce(Vector3);
+	void addTimedForce(Vector3, float);
+	void ftimer(Vector3 , float);
+	
 
 private:
 	float mass;

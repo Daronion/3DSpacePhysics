@@ -1,5 +1,9 @@
 #include "Part.h"
 #include <time.h>
+#include <Windows.h>
+#include <thread>
+
+using namespace std;
 
 Part::Part()
 {
@@ -109,11 +113,27 @@ void Part::setAcc(Vector3 g_acc)
 	Acc = g_acc;
 }
 
-void Part::addForce(Vector3 dir, int duration)
+void Part::addForce(Vector3 dir)
 {
+	setAcc(Vector3(getAcc().f.x + dir.f.x/mass, getAcc().f.y + dir.f.y/mass, getAcc().f.z + dir.f.z/mass));
 	
 }
+/*
+void Part::addTimedForce(Vector3 force, float time)
+{
+	addForce(force);
+	
+	thread t1(ftimer(force,time));
+	t1.join;
 
+}
+
+void Part::ftimer(Vector3 force,float time)
+{
+	Sleep(1000 * time);
+	addForce(Vector3(-force.f.x, -force.f.y, -force.f.z));
+}
+ */
 Part::~Part()
 {
 }
