@@ -4,9 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-
-
-
+#include <thread>
 
 struct Vector3Fields
 {
@@ -66,6 +64,10 @@ union Vector3 {
 		return result;
 	}
 
+	Vector3 neg() {
+		Vector3 result(-f.x, -f.y, -f.z);
+		return result;
+	}
 
 };
 

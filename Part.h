@@ -1,11 +1,18 @@
 #pragma once
 #include "structs.h"
+#include "fComponents.h"
+#include <vector>
+#include <utility>
+#include <thread>
 
 
 
 class Part
 {
 public:
+
+	//std::vector< std::pair<std::thread *, bool> >running_list;
+	std::vector< fComponents >running_list;
 
 	//Default Constructor
 	Part();
@@ -25,6 +32,8 @@ public:
 	Vector3 getRotation();
 	Vector3 getAngVel(); // -- Angular Velocity & Acceleration
 	Vector3 getAngAcc();
+
+
 	
 	//Mutator Functions
 	void setMass(float);
@@ -37,8 +46,8 @@ public:
 
 	//
 	void addForce(Vector3);
-	void addTimedForce(Vector3, float);
-	void ftimer(Vector3 , float);
+	//void addTimedForce(Vector3, float);
+	//void ftimer(Vector3 , float, unsigned int,Part&);
 	
 
 private:
@@ -49,5 +58,6 @@ private:
 	Vector3 Rotation;
 	Vector3 AngVel;
 	Vector3 AngAcc;
+
 };
 

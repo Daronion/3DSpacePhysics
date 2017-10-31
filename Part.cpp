@@ -2,6 +2,8 @@
 #include <time.h>
 #include <Windows.h>
 #include <thread>
+#include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -118,22 +120,28 @@ void Part::addForce(Vector3 dir)
 	setAcc(Vector3(getAcc().f.x + dir.f.x/mass, getAcc().f.y + dir.f.y/mass, getAcc().f.z + dir.f.z/mass));
 	
 }
-/*
+
+/*void Part::ftimer(Vector3 force, float time , unsigned int index ,Part& part)
+{
+	std::cout << "sleeping\n\n";
+	Sleep(1000 * time);
+	std::cout << "done sleeping\n\n";
+	part.addForce(Vector3(-force.f.x, -force.f.y, -force.f.z));
+	//running_list[index].done = true;
+	running_list[index].force = force.neg();
+}
+
+
 void Part::addTimedForce(Vector3 force, float time)
 {
 	addForce(force);
+
+	running_list.push_back(fComponents(nullptr, false, force));
+	thread *t1 = new thread(&Part::ftimer, this, force, time, running_list.size() - 1, std::ref(this));   //,running_list[running_list.size()-1].done
+	running_list[running_list.size() - 1].th = t1;
 	
-	thread t1(ftimer(force,time));
-	t1.join;
-
 }
-
-void Part::ftimer(Vector3 force,float time)
-{
-	Sleep(1000 * time);
-	addForce(Vector3(-force.f.x, -force.f.y, -force.f.z));
-}
- */
+*/
 Part::~Part()
 {
 }
