@@ -17,7 +17,7 @@ int main(){
 	vector<thread> threads_vector;
 
 
-	Part a(Vector3(10, 0, 5000), 10);
+	Part a(Vector3(10, 0, 5000), 1);
 	//a.addTimedForce(Vector3(1, 1, 40),2);
 	
 	parts_vector.push_back(a);
@@ -44,6 +44,8 @@ void Update(vector<Part>& P) {
 	clock_t time;
 	time = clock();
 	float g = 9.81;
+	const unsigned short MSB = 0x8000;
+	int trigger_up = 0;
 
 	unsigned int parts_nr = P.size();
 
@@ -53,6 +55,20 @@ void Update(vector<Part>& P) {
 		std::cout << "Time: " << time << "  ";
 
 		//forceend
+
+		if (GetAsyncKeyState(VK_UP) & MSB && !trigger_up)
+		{
+			// then the specified key is "down"
+			trigger_up = 1;
+			P[0].addForce(Vector3(0, 0, 25));
+		}
+		else if(!(GetAsyncKeyState(VK_UP) & MSB) && trigger_up)
+		{
+			// the specified key is "up"
+			trigger_up = 0;
+			P[0].addForce(Vector3(0, 0, -25));
+		}
+
 		for (int i = 0; i < P[0].running_list.size(); i++)
 		{
 			if (P[0].running_list[i].done) {
@@ -97,12 +113,12 @@ void Update(vector<Part>& P) {
 			}
 
 			std::cout << setprecision(2) << fixed << i + 1 << ") Position:" << P[i].getPosition().toString() << "  Speed:" << P[i].getSpeed().toString() << "  Acceleration:" << P[i].getAcc().toString() << "     ";   //- afisare
+
 			Sleep(500);
 
 		}
 
 		std::cout << "\r";
-
 	}
 
 }
