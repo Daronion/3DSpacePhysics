@@ -11,9 +11,6 @@ class Part
 {
 public:
 
-	//std::vector< std::pair<std::thread *, bool> >running_list;
-	std::vector< fComponents >running_list;
-
 	//Default Constructor
 	Part();
 
@@ -46,9 +43,6 @@ public:
 
 	//
 	void addForce(Vector3);
-	//void addTimedForce(Vector3, float);
-	//void ftimer(Vector3 , float, unsigned int,Part&);
-	
 
 private:
 	float mass;

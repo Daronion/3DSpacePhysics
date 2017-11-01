@@ -14,8 +14,8 @@ Part::Part()
 	AngAcc = Vector3(0, 0, 0);
 	AngVel = Vector3(0, 0, 0);
 	Speed = Vector3(0, 0, 0);
-	Acc = Vector3(0, 0, 0);
 	mass = 1;
+	Acc = Vector3(0, 0, -9.81);
 }
 
 Part::Part(Vector3 pos, float given_mass)
@@ -25,9 +25,9 @@ Part::Part(Vector3 pos, float given_mass)
 	AngAcc = Vector3(0, 0, 0);
 	AngVel = Vector3(0, 0, 0);
 	Speed = Vector3(0, 0, 0);
-	Acc = Vector3(0, 0, 0);
 
 	mass = given_mass;
+	Acc = Vector3(0, 0, -9.81);
 }
 
 Part::Part(float given_mass)
@@ -38,7 +38,7 @@ Part::Part(float given_mass)
 	AngAcc = Vector3(0, 0, 0);
 	AngVel = Vector3(0, 0, 0);
 	Speed = Vector3(0, 0, 0);
-	Acc = Vector3(0, 0, 0);
+	Acc = Vector3(0, 0, -9.81);
 }
 
 //Accessors

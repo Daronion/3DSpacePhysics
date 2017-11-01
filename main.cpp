@@ -4,6 +4,7 @@
 #include "Part.h"
 #include <time.h>		
 #include <Windows.h>
+#include <chrono>
 #include <vector>
 #include <thread>
 
@@ -17,7 +18,7 @@ int main(){
 	vector<thread> threads_vector;
 
 
-	Part a(Vector3(10, 0, 5000), 1);
+	Part a(Vector3(10, 0, 500), 1);
 	//a.addTimedForce(Vector3(1, 1, 40),2);
 	
 	parts_vector.push_back(a);
@@ -29,20 +30,14 @@ int main(){
 	return 0;
 }
 
-
-void ftimer(Part part, Vector3 force, float time, unsigned int index)
-{
-	std::cout << "sleeping\n\n";
-	Sleep(1000 * time);
-	std::cout << "done sleeping\n\n";
-	//addForce(Vector3(-force.f.x, -force.f.y, -force.f.z));
-	part.running_list[index].done = true;
-	part.running_list[index].force = force.neg();
-}
-
 void Update(vector<Part>& P) {
-	clock_t time;
-	time = clock();
+	//clock_t time;
+	//time = clock();
+	auto started = std::chrono::high_resolution_clock::now();
+
+	long double time_before = 0;
+	long double deltaTime = 0;
+
 	float g = 9.81;
 	const unsigned short MSB = 0x8000;
 	int trigger_up = 0;
@@ -50,9 +45,12 @@ void Update(vector<Part>& P) {
 	unsigned int parts_nr = P.size();
 
 	while (true) {
-		time = ((float)(clock() - time)) / CLOCKS_PER_SEC;   // -- aproximatie sa dea in secunde, nu stiu cat de buna e
+		auto done = std::chrono::high_resolution_clock::now();
+		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(done - started).count();
+		deltaTime = (time - time_before)/1000;
+		time_before = time;
 
-		std::cout << "Time: " << time << "  ";
+		std::cout << "T:" << time/1000 << " ";
 
 		//forceend
 
@@ -69,52 +67,23 @@ void Update(vector<Part>& P) {
 			P[0].addForce(Vector3(0, 0, -25));
 		}
 
-		for (int i = 0; i < P[0].running_list.size(); i++)
-		{
-			if (P[0].running_list[i].done) {
-				thread *tmp = P[0].running_list[i].th;
-							
-				if(tmp->joinable())
-				tmp->join();
-				delete tmp;
-
-				P[0].addForce(P[0].running_list[i].force);
-				std::cout << "\n\n\n****eftasa";
-				P[0].running_list.erase(P[0].running_list.begin() + i);
-			}
-			//std::cout << " \n\n**** [" << P[0].running_list[i].second<< "]";
-		}
-	
-
 		for (unsigned int i = 0; i < parts_nr ; i++) // -- updatare pozitie a fiecarui obiect
 		{
-			if (P[i].getPosition().f.z > 0) {						// -- verifica daca obiectul se afla deasupra pamantului
-				P[i].setSpeed(Vector3(
-				P[i].getSpeed().f.x + P[i].getAcc().f.x,
-				P[i].getSpeed().f.y + P[i].getAcc().f.y, 
-				P[i].getSpeed().f.z - g + P[i].getAcc().f.z));       // creste/scade viteza pe baza acceleratiei
+			Vector3 newSpeed = P[i].getSpeed() + (P[i].getAcc() * deltaTime);
+			Vector3 newPos = P[i].getPosition() + (P[i].getSpeed() * deltaTime);
 
-				P[i].setPosition(P[i].getPosition().add(P[i].getSpeed()));		// update coord
+			if (newPos.f.z > 0) {
+				P[i].setSpeed(newSpeed);
+				P[i].setPosition(newPos);
 			}
 			else {
-				P[i].setSpeed(Vector3(
-				P[i].getSpeed().f.x + P[i].getAcc().f.x,
-				P[i].getSpeed().f.y + P[i].getAcc().f.y,
-				P[i].getSpeed().f.z + P[i].getAcc().f.z));             // creste/scade viteza pe baza acceleratiei dar nu se mai ia in calcul G-ul	
-																			  // -- opreste obiectul din cadere
-				if (P[i].getSpeed().f.z < 0) {
-					P[i].setSpeed(Vector3(P[i].getSpeed().f.x, P[i].getSpeed().f.y, 0));
-				}
-
-				P[i].setPosition(Vector3(
-				P[i].getPosition().f.x + P[i].getSpeed().f.x ,
-				P[i].getPosition().f.y + P[i].getSpeed().f.y,
-					0)); // update coord
+				P[i].setSpeed(Vector3(newSpeed.f.x, newSpeed.f.y, 0));
+				P[i].setPosition(Vector3(newPos.f.x, newPos.f.y, 0));
 			}
 
 			std::cout << setprecision(2) << fixed << i + 1 << ") Position:" << P[i].getPosition().toString() << "  Speed:" << P[i].getSpeed().toString() << "  Acceleration:" << P[i].getAcc().toString() << "     ";   //- afisare
 
-			Sleep(500);
+			Sleep(50);
 
 		}
 

@@ -44,6 +44,53 @@ union Vector3 {
 	
 	//Operatori
 
+	Vector3 operator+(const Vector3& other) {
+		Vector3 result(0, 0, 0);          
+
+		result.f.x = other.f.x + f.x;
+		result.f.y = other.f.y + f.y;
+		result.f.z = other.f.z + f.z;
+
+		return result;
+	}
+
+	Vector3 operator-(const Vector3& other) {
+		Vector3 result(0, 0, 0);
+
+		result.f.x = other.f.x - f.x;
+		result.f.y = other.f.y - f.y;
+		result.f.z = other.f.z - f.z;
+
+		return result;
+	}
+
+	Vector3 operator*(const Vector3& other) {
+		Vector3 result(0, 0, 0);
+
+		result.f.x = other.f.x * f.x;
+		result.f.y = other.f.y * f.y;
+		result.f.z = other.f.z * f.z;
+
+		return result;
+	}
+
+	Vector3 operator*(const double& other) {
+		Vector3 result(0, 0, 0);
+
+		result.f.x = other * f.x;
+		result.f.y = other * f.y;
+		result.f.z = other * f.z;
+
+		return result;
+	}
+
+	Vector3& operator=(const Vector3& other) {
+		f.x = other.f.x;
+		f.y = other.f.y;
+		f.z = other.f.z;
+		return *this;
+	}
+
 	Vector3 add(Vector3 other) {             //  -- adauga vectorului3 curent un alt vector, returneaza un vector3 nou.
 		Vector3 result(0,0,0);                 //Ex: c = a.add(b)     , abc Vectori3 
 
