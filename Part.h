@@ -1,11 +1,10 @@
 #pragma once
 #include "structs.h"
-#include "fComponents.h"
 #include <vector>
 #include <utility>
 #include <thread>
 
-
+const double pi = 3.14;
 
 class Part
 {
@@ -16,6 +15,7 @@ public:
 
 	//Overload Constructors
 	Part(Vector3 ,float );
+	Part(Vector3, float, float);
 	Part(float);
 
 	//Default Destructor
@@ -43,9 +43,13 @@ public:
 
 	//
 	void addForce(Vector3);
+	void addAttachedForce(Vector3);
+	void addUnevenForce(Vector3, Vector3);
+	void addTorque(Vector3);
 
 private:
 	float mass;
+	float momentOfInertia;
 	Vector3 Position;
 	Vector3 Speed;
 	Vector3 Acc;

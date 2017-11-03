@@ -74,6 +74,26 @@ union Vector3 {
 		return result;
 	}
 
+	Vector3 operator/(const Vector3& other) {
+		Vector3 result(0, 0, 0);
+
+		result.f.x = f.x / other.f.x;
+		result.f.y = f.y / other.f.y;
+		result.f.z = f.z / other.f.z;
+
+		return result;
+	}
+
+	Vector3 operator^(const Vector3& other) {   //Operatorul ^ va reprezenta inmultirea vectoriala
+		Vector3 result(0, 0, 0);
+
+		result.f.x = f.z*other.f.y - f.y*other.f.z;
+		result.f.y = f.x*other.f.z - f.z*other.f.x;
+		result.f.z = f.y*other.f.x - f.x*other.f.y;
+
+		return result;
+	}
+
 	Vector3 operator*(const double& other) {
 		Vector3 result(0, 0, 0);
 
@@ -84,12 +104,24 @@ union Vector3 {
 		return result;
 	}
 
+	Vector3 operator/(const double& other) {
+		Vector3 result(0, 0, 0);
+
+		result.f.x = f.x / other;
+		result.f.y = f.y / other;
+		result.f.z = f.z / other;
+
+		return result;
+	}
+
 	Vector3& operator=(const Vector3& other) {
 		f.x = other.f.x;
 		f.y = other.f.y;
 		f.z = other.f.z;
 		return *this;
 	}
+
+
 
 	Vector3 add(Vector3 other) {             //  -- adauga vectorului3 curent un alt vector, returneaza un vector3 nou.
 		Vector3 result(0,0,0);                 //Ex: c = a.add(b)     , abc Vectori3 

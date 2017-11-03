@@ -18,9 +18,16 @@ int main(){
 	vector<thread> threads_vector;
 
 
-	Part a(Vector3(10, 0, 500), 1);
+	Part a(Vector3(10, 0, 500), 10 , 100);
 	//a.addTimedForce(Vector3(1, 1, 40),2);
-	
+	a.addForce(Vector3(0, 0, 9.81*a.getMass()));
+	a.addUnevenForce(Vector3(0, 0, 10), Vector3(0, -10, 0));
+	a.addUnevenForce(Vector3(0, 0, 10), Vector3(0, 10, 0));
+	a.addUnevenForce(Vector3(0, 0, 10), Vector3(10, 0, 0));
+
+
+
+
 	parts_vector.push_back(a);
 
 	Update(parts_vector);
@@ -40,7 +47,8 @@ void Update(vector<Part>& P) {
 
 	float g = 9.81;
 	const unsigned short MSB = 0x8000;
-	int trigger_up = 0;
+	bool trigger_up = false;
+	bool trigger_down = false;
 
 	unsigned int parts_nr = P.size();
 
@@ -50,27 +58,49 @@ void Update(vector<Part>& P) {
 		deltaTime = (time - time_before)/1000;
 		time_before = time;
 
-		std::cout << "T:" << time/1000 << " ";
+		//std::cout << "T:" << time/1000 << " ";     // Afisarea timpului
 
 		//forceend
 
 		if (GetAsyncKeyState(VK_UP) & MSB && !trigger_up)
 		{
 			// then the specified key is "down"
-			trigger_up = 1;
+			trigger_up = true;
 			P[0].addForce(Vector3(0, 0, 25));
+			P[0].addTorque(Vector3(0, 0, 10));
 		}
 		else if(!(GetAsyncKeyState(VK_UP) & MSB) && trigger_up)
 		{
 			// the specified key is "up"
-			trigger_up = 0;
+			trigger_up = false;
 			P[0].addForce(Vector3(0, 0, -25));
+			P[0].addTorque(Vector3(0, 0, -10));
+
+		}
+
+		if (GetAsyncKeyState(VK_DOWN) & MSB && !trigger_down)
+		{
+			// then the specified key is "down"
+			trigger_down = true;
+			P[0].addForce(Vector3(0, 0, -25));
+			P[0].addTorque(Vector3(0, 0, -10));
+		}
+		else if (!(GetAsyncKeyState(VK_DOWN) & MSB) && trigger_down)
+		{
+			// the specified key is "up"
+			trigger_down = false;
+			P[0].addForce(Vector3(0, 0, 25));
+			P[0].addTorque(Vector3(0, 0, 10));
+
 		}
 
 		for (unsigned int i = 0; i < parts_nr ; i++) // -- updatare pozitie a fiecarui obiect
 		{
 			Vector3 newSpeed = P[i].getSpeed() + (P[i].getAcc() * deltaTime);
 			Vector3 newPos = P[i].getPosition() + (P[i].getSpeed() * deltaTime);
+
+			Vector3 newAngVel = P[i].getAngVel() + (P[i].getAngAcc() * deltaTime);
+			Vector3 newRotation = P[i].getRotation() + (P[i].getAngVel() * deltaTime);
 
 			if (newPos.f.z > 0) {
 				P[i].setSpeed(newSpeed);
@@ -81,7 +111,12 @@ void Update(vector<Part>& P) {
 				P[i].setPosition(Vector3(newPos.f.x, newPos.f.y, 0));
 			}
 
-			std::cout << setprecision(2) << fixed << i + 1 << ") Position:" << P[i].getPosition().toString() << "  Speed:" << P[i].getSpeed().toString() << "  Acceleration:" << P[i].getAcc().toString() << "     ";   //- afisare
+			P[i].setAngVel(newAngVel);
+			P[i].setRotation(newRotation);
+
+			std::cout << setprecision(2) << fixed << i + 1 << ") P:" << P[i].getPosition().toString() << " S:" << P[i].getSpeed().toString(); //<< " A:" << P[i].getAcc().toString() << "     ";   //- afisare
+			std::cout << setprecision(2) << fixed << i + 1 << ") R:" << P[i].getRotation().toString() << "  AV:" << P[i].getAngVel().toString() << " AA:" << P[i].getAngAcc().toString() << "     ";   //- afisare
+
 
 			Sleep(50);
 

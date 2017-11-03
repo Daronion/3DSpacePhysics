@@ -15,6 +15,7 @@ Part::Part()
 	AngVel = Vector3(0, 0, 0);
 	Speed = Vector3(0, 0, 0);
 	mass = 1;
+	momentOfInertia = 1;
 	Acc = Vector3(0, 0, -9.81);
 }
 
@@ -27,12 +28,29 @@ Part::Part(Vector3 pos, float given_mass)
 	Speed = Vector3(0, 0, 0);
 
 	mass = given_mass;
+	momentOfInertia = 1;
+
 	Acc = Vector3(0, 0, -9.81);
 }
 
+Part::Part(Vector3 pos, float given_mass,float given_moi)
+{
+	Position = pos;
+	Rotation = Vector3(0, 0, 0);
+	AngAcc = Vector3(0, 0, 0);
+	AngVel = Vector3(0, 0, 0);
+	Speed = Vector3(0, 0, 0);
+
+	mass = given_mass;
+	momentOfInertia = given_moi;
+
+	Acc = Vector3(0, 0, -9.81);
+}
 Part::Part(float given_mass)
 {
 	mass = given_mass;
+	momentOfInertia = 1;
+
 	Position = Vector3(0, 0, 0);
 	Rotation = Vector3(0, 0, 0);
 	AngAcc = Vector3(0, 0, 0);
@@ -115,33 +133,22 @@ void Part::setAcc(Vector3 g_acc)
 	Acc = g_acc;
 }
 
-void Part::addForce(Vector3 dir)
+void Part::addForce(Vector3 force)
 {
-	setAcc(Vector3(getAcc().f.x + dir.f.x/mass, getAcc().f.y + dir.f.y/mass, getAcc().f.z + dir.f.z/mass));
-	
+	setAcc(getAcc() + force / mass);
 }
 
-/*void Part::ftimer(Vector3 force, float time , unsigned int index ,Part& part)
+void Part::addUnevenForce(Vector3 force, Vector3 distance) // distance - dintre originea fortei si centrul obiectului
 {
-	std::cout << "sleeping\n\n";
-	Sleep(1000 * time);
-	std::cout << "done sleeping\n\n";
-	part.addForce(Vector3(-force.f.x, -force.f.y, -force.f.z));
-	//running_list[index].done = true;
-	running_list[index].force = force.neg();
+	setAcc(getAcc() + force / mass);
+	addTorque(force ^ distance);
 }
 
-
-void Part::addTimedForce(Vector3 force, float time)
+void Part::addTorque(Vector3 torque)
 {
-	addForce(force);
-
-	running_list.push_back(fComponents(nullptr, false, force));
-	thread *t1 = new thread(&Part::ftimer, this, force, time, running_list.size() - 1, std::ref(this));   //,running_list[running_list.size()-1].done
-	running_list[running_list.size() - 1].th = t1;
-	
+	setAngAcc(getAngAcc() + torque / momentOfInertia);
 }
-*/
+
 Part::~Part()
 {
 }
