@@ -23,6 +23,7 @@ public:
 
 	//Accessor Functions
 	float getMass();
+	float getMoI();
 	Vector3 getPosition();
 	Vector3 getSpeed();
 	Vector3 getAcc();
@@ -33,7 +34,8 @@ public:
 
 	
 	//Mutator Functions
-	void setMass(float);
+	void setMass(float); 
+	void setMoI(float);
 	void setPosition(Vector3);
 	void setSpeed(Vector3);
 	void setAcc(Vector3);

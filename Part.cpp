@@ -66,6 +66,10 @@ float Part::getMass()
 	return mass;
 }
 
+float Part::getMoI()
+{
+	return momentOfInertia;
+}
 Vector3 Part::getPosition()
 {
 	return Position;
@@ -103,6 +107,10 @@ void Part::setMass(float g_mass)
 	mass = g_mass;
 }
 
+void Part::setMoI(float g_MoI)
+{
+	momentOfInertia = g_MoI;
+}
 void Part::setPosition(Vector3 g_pos)
 {
 	Position = g_pos;
