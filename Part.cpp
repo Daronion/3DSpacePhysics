@@ -7,7 +7,7 @@
 
 using namespace std;
 
-Part::Part()
+Part::Part()								// constructor nul
 {
 	Position = Vector3(0, 0, 0);
 	Rotation = Vector3(0, 0, 0);
@@ -16,10 +16,10 @@ Part::Part()
 	Speed = Vector3(0, 0, 0);
 	mass = 1;
 	momentOfInertia = 1;
-	Acc = Vector3(0, 0, -9.81);
+	Acc = Vector3(0, 0, -9.81);	//acceleratie gravitationala
 }
 
-Part::Part(Vector3 pos, float given_mass)
+Part::Part(Vector3 pos, float given_mass)	// constructor pentru pozitie si masa date
 {
 	Position = pos;
 	Rotation = Vector3(0, 0, 0);
@@ -33,7 +33,7 @@ Part::Part(Vector3 pos, float given_mass)
 	Acc = Vector3(0, 0, -9.81);
 }
 
-Part::Part(Vector3 pos, float given_mass,float given_moi)
+Part::Part(Vector3 pos, float given_mass,float given_moi)	// constructor pentru pozitie, masa si "moment of inertia" date
 {
 	Position = pos;
 	Rotation = Vector3(0, 0, 0);
@@ -46,7 +46,7 @@ Part::Part(Vector3 pos, float given_mass,float given_moi)
 
 	Acc = Vector3(0, 0, -9.81);
 }
-Part::Part(float given_mass)
+Part::Part(float given_mass)		// constructor doar pt masa data
 {
 	mass = given_mass;
 	momentOfInertia = 1;
@@ -59,7 +59,7 @@ Part::Part(float given_mass)
 	Acc = Vector3(0, 0, -9.81);
 }
 
-//Accessors
+//Accessors - numele destul de sugestiv
 
 float Part::getMass()
 {
@@ -76,12 +76,12 @@ Vector3 Part::getRotation()
 	return Rotation;
 }
 
-Vector3 Part::getAngVel()
+Vector3 Part::getAngVel()  // "viteza unghiulara"
 {
 	return AngVel;
 }
 
-Vector3 Part::getAngAcc()
+Vector3 Part::getAngAcc() // "acceleratie unghiulara"
 {
 	return AngAcc;
 }
@@ -149,6 +149,6 @@ void Part::addTorque(Vector3 torque)
 	setAngAcc(getAngAcc() + torque / momentOfInertia);
 }
 
-Part::~Part()
+Part::~Part() 
 {
 }
