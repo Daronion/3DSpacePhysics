@@ -7,7 +7,7 @@
 
 using namespace std;
 
-Part::Part()								// constructor nul
+Part::Part()
 {
 	Position = Vector3(0, 0, 0);
 	Rotation = Vector3(0, 0, 0);
@@ -16,10 +16,10 @@ Part::Part()								// constructor nul
 	Speed = Vector3(0, 0, 0);
 	mass = 1;
 	momentOfInertia = 1;
-	Acc = Vector3(0, 0, -9.81);	//acceleratie gravitationala
+	Acc = Vector3(0, 0, -9.81);
 }
 
-Part::Part(Vector3 pos, float given_mass)	// constructor pentru pozitie si masa date
+Part::Part(Vector3 pos, float given_mass)
 {
 	Position = pos;
 	Rotation = Vector3(0, 0, 0);
@@ -33,7 +33,7 @@ Part::Part(Vector3 pos, float given_mass)	// constructor pentru pozitie si masa 
 	Acc = Vector3(0, 0, -9.81);
 }
 
-Part::Part(Vector3 pos, float given_mass,float given_moi)	// constructor pentru pozitie, masa si "moment of inertia" date
+Part::Part(Vector3 pos, float given_mass,float given_moi)
 {
 	Position = pos;
 	Rotation = Vector3(0, 0, 0);
@@ -46,7 +46,7 @@ Part::Part(Vector3 pos, float given_mass,float given_moi)	// constructor pentru 
 
 	Acc = Vector3(0, 0, -9.81);
 }
-Part::Part(float given_mass)		// constructor doar pt masa data
+Part::Part(float given_mass)
 {
 	mass = given_mass;
 	momentOfInertia = 1;
@@ -59,7 +59,7 @@ Part::Part(float given_mass)		// constructor doar pt masa data
 	Acc = Vector3(0, 0, -9.81);
 }
 
-//Accessors - numele destul de sugestiv
+//Accessors
 
 float Part::getMass()
 {
@@ -70,6 +70,7 @@ float Part::getMoI()
 {
 	return momentOfInertia;
 }
+
 Vector3 Part::getPosition()
 {
 	return Position;
@@ -80,12 +81,12 @@ Vector3 Part::getRotation()
 	return Rotation;
 }
 
-Vector3 Part::getAngVel()  // "viteza unghiulara"
+Vector3 Part::getAngVel()
 {
 	return AngVel;
 }
 
-Vector3 Part::getAngAcc() // "acceleratie unghiulara"
+Vector3 Part::getAngAcc()
 {
 	return AngAcc;
 }
@@ -111,6 +112,7 @@ void Part::setMoI(float g_MoI)
 {
 	momentOfInertia = g_MoI;
 }
+
 void Part::setPosition(Vector3 g_pos)
 {
 	Position = g_pos;
@@ -157,6 +159,6 @@ void Part::addTorque(Vector3 torque)
 	setAngAcc(getAngAcc() + torque / momentOfInertia);
 }
 
-Part::~Part() 
+Part::~Part()
 {
 }

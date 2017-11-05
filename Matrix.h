@@ -16,6 +16,7 @@ public:
 	Matrix operator+(Matrix);
 	Matrix operator-(Matrix);
 	Matrix operator*(Matrix);
+	Vector3 operator*(Vector3);   //pt inmultire cu Vectori3
 	Matrix operator^(unsigned int);
 	Matrix& operator=(const Matrix);
 

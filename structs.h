@@ -1,5 +1,4 @@
-#ifndef STRUCTS_H
-#define STRUCTS_H
+#pragma once
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -21,21 +20,21 @@ struct Vector3Fields
 
 union Vector3 {
 	Vector3Fields f; // f de la fields
-	int raw[3];
+	float raw[3];
 
 	//Constructors
-	Vector3() {					//constructor de coordonate care da punctul de plecare originea
+	Vector3() {
 		f.x = 0;
 		f.y = 0;
 		f.z = 0;
 	}
-	Vector3(float x, float y, float z) {		//constructor de coordonate 
+	Vector3(float x, float y, float z) {
 		f.x = x;
 		f.y = y;
 		f.z = z;
 	}
 	//toString
-	std::string toString()				//afisare
+	std::string toString()
 	{
 		std::ostringstream output;
 		output << std::setprecision(2) << std::fixed << f.x << " " << f.y << " " << f.z << " ";
@@ -44,7 +43,7 @@ union Vector3 {
 	
 	//Operatori
 
-	Vector3 operator+(const Vector3& other) {		//adunare
+	Vector3 operator+(const Vector3& other) {
 		Vector3 result(0, 0, 0);          
 
 		result.f.x = other.f.x + f.x;
@@ -54,7 +53,7 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3 operator-(const Vector3& other) {			//scadere
+	Vector3 operator-(const Vector3& other) {
 		Vector3 result(0, 0, 0);
 
 		result.f.x = other.f.x - f.x;
@@ -64,7 +63,7 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3 operator*(const Vector3& other) {		//inmultire cu alt vector
+	Vector3 operator*(const Vector3& other) {
 		Vector3 result(0, 0, 0);
 
 		result.f.x = other.f.x * f.x;
@@ -74,7 +73,7 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3 operator/(const Vector3& other) {		// impartire cu alt vector
+	Vector3 operator/(const Vector3& other) {
 		Vector3 result(0, 0, 0);
 
 		result.f.x = f.x / other.f.x;
@@ -94,7 +93,7 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3 operator*(const double& other) {		//inmultire cu scalar
+	Vector3 operator*(const double& other) {
 		Vector3 result(0, 0, 0);
 
 		result.f.x = other * f.x;
@@ -104,7 +103,7 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3 operator/(const double& other) {		//impartire la scalar
+	Vector3 operator/(const double& other) {
 		Vector3 result(0, 0, 0);
 
 		result.f.x = f.x / other;
@@ -114,7 +113,7 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3& operator=(const Vector3& other) {  //atribuire
+	Vector3& operator=(const Vector3& other) {
 		f.x = other.f.x;
 		f.y = other.f.y;
 		f.z = other.f.z;
@@ -133,7 +132,7 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3 subtract(Vector3 other){		// -- idem ca la add, dar cu minus
+	Vector3 subtract(Vector3 other){
 		Vector3 result(0, 0, 0);
 
 		result.f.x = other.f.x + f.x;
@@ -143,11 +142,9 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3 neg() {								//baga inversu, esti prost?
+	Vector3 neg() {
 		Vector3 result(-f.x, -f.y, -f.z);
 		return result;
 	}
 
 };
-
-#endif // STRUCTS_H

@@ -82,6 +82,24 @@ Matrix Matrix::operator*(Matrix b) {
 	return result;
 }
 
+Vector3 Matrix::operator*(Vector3 other)
+{
+	if (columns != 3)
+	{
+		std::cout << ("ERROR: The number columns of this  != number of rows in Vector3!");
+		terminate();
+	}
+	Vector3 result(0,0,0);
+
+	for (int i = 0; i < 3; i++)
+	{
+		result.f.x = f[0][0] * other.f.x + f[0][1] * other.f.y + f[0][2] * other.f.z;
+		result.f.y = f[1][0] * other.f.x + f[1][1] * other.f.y + f[1][2] * other.f.z;
+		result.f.z = f[2][0] * other.f.x + f[2][1] * other.f.y + f[2][2] * other.f.z;
+	}
+	return result;
+}
+
 Matrix Matrix::operator^(unsigned int putere){
 
 	Matrix out(this->rows, this->columns);

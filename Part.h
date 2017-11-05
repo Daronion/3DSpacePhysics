@@ -34,7 +34,7 @@ public:
 
 	
 	//Mutator Functions
-	void setMass(float); 
+	void setMass(float);
 	void setMoI(float);
 	void setPosition(Vector3);
 	void setSpeed(Vector3);
