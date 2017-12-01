@@ -1,9 +1,11 @@
 #include "Part.h"
 #include <time.h>
 #include <Windows.h>
+#include <math.h>
 #include <thread>
 #include <utility>
 #include <vector>
+#include "structs.h"
 
 using namespace std;
 
@@ -17,6 +19,7 @@ Part::Part()
 	mass = 1;
 	momentOfInertia = 1;
 	Acc = Vector3(0, 0, -9.81);
+	ModifyingAcc = Vector3(0, 0, -9.81);
 }
 
 Part::Part(Vector3 pos, float given_mass)
@@ -31,9 +34,10 @@ Part::Part(Vector3 pos, float given_mass)
 	momentOfInertia = 1;
 
 	Acc = Vector3(0, 0, -9.81);
+	ModifyingAcc = Vector3(0, 0, -9.81);
 }
 
-Part::Part(Vector3 pos, float given_mass,float given_moi)
+Part::Part(Vector3 pos, float given_mass, float given_moi)
 {
 	Position = pos;
 	Rotation = Vector3(0, 0, 0);
@@ -44,7 +48,8 @@ Part::Part(Vector3 pos, float given_mass,float given_moi)
 	mass = given_mass;
 	momentOfInertia = given_moi;
 
-	Acc = Vector3(0, 0, -9.81);
+	Acc = Vector3(0, 0, 0);
+	ModifyingAcc = Vector3(0, 0, -9.81);
 }
 Part::Part(float given_mass)
 {
@@ -56,7 +61,8 @@ Part::Part(float given_mass)
 	AngAcc = Vector3(0, 0, 0);
 	AngVel = Vector3(0, 0, 0);
 	Speed = Vector3(0, 0, 0);
-	Acc = Vector3(0, 0, -9.81);
+	Acc = Vector3(0, 0, 0);
+	ModifyingAcc = Vector3(0, 0, -9.81);
 }
 
 //Accessors
@@ -64,11 +70,6 @@ Part::Part(float given_mass)
 float Part::getMass()
 {
 	return mass;
-}
-
-float Part::getMoI()
-{
-	return momentOfInertia;
 }
 
 Vector3 Part::getPosition()
@@ -101,16 +102,16 @@ Vector3 Part::getAcc()
 	return Acc;
 }
 
+Vector3 Part::getModifyingAcc()
+{
+	return ModifyingAcc;
+}
+
 //Mutators
 
 void Part::setMass(float g_mass)
 {
 	mass = g_mass;
-}
-
-void Part::setMoI(float g_MoI)
-{
-	momentOfInertia = g_MoI;
 }
 
 void Part::setPosition(Vector3 g_pos)
@@ -138,6 +139,22 @@ void Part::setSpeed(Vector3 g_speed)
 	Speed = g_speed;
 }
 
+float Part::module(Vector3 vec)
+{
+	return cbrt(pow(vec.f.x,3) + pow(vec.f.y,3) + pow(vec.f.z,3));        //calculeaza modulul unui vector de 3
+}
+
+void Part::setModifyingAcc(Vector3 rotation)
+{
+	rotation = getRotation();
+	float modul = module(getAcc());
+	float a = modul*(sin(Rotation.f.y)*sin(Rotation.f.x) + cos(Rotation.f.x)*sin(Rotation.f.y));
+	float b = modul*sin(Rotation.f.x)*cos(Rotation.f.y);				//acceleratia care se modifica pe axe
+	float c = modul*cos(Rotation.f.y)*cos(Rotation.f.x) - 9.81;
+	Vector3 newAcc(a, b, c);
+	ModifyingAcc = newAcc;
+}
+
 void Part::setAcc(Vector3 g_acc)
 {
 	Acc = g_acc;
@@ -158,6 +175,34 @@ void Part::addTorque(Vector3 torque)
 {
 	setAngAcc(getAngAcc() + torque / momentOfInertia);
 }
+
+void Part::addTorqueZ(Vector3 force, Vector3 distance)
+{
+	int k;
+	if (distance.f.x != 0) k = 1;
+	else if (distance.f.y != 0) k = 2;
+	Vector3 torque(0, 0, pow((-1),k) * module(force));           //**module(force)** trebuie modificat in functie
+	setAngAcc(getAngAcc() + torque / momentOfInertia);			//de o formula pt calcularea mom de rotatie
+}
+
+
+void Part::addAttachedForce(Vector3 force,Vector3 distance)
+{
+	addTorque(force ^ distance);
+	addTorqueZ(force,distance);
+	setAcc(getAcc() + force / mass);							  //am adaugat moment in jurul axei Oz;
+	ModifyingAcc = getModifyingAcc() + getAcc();
+}
+
+Vector3 Part::rotmatrixprod(Vector3 angvel, Vector3 rot)
+{
+	Vector3 l1(cos(rot.f.y), 0, -cos(rot.f.x)*sin(rot.f.y));    //am construit matricea de rotatie in functie de unghiurile
+	Vector3 l2(0, 1, sin(rot.f.x));                         //de rotatie
+	Vector3 l3(sin(rot.f.y), 0, cos(rot.f.x)*cos(rot.f.y));
+	Vector3 prod(l1 | angvel, l2 | angvel, l3 | angvel);		  //operatorul ** definit in structs.h sper ca bine
+	return prod;											//vectorul rezultat contine vitezele unghiulare 
+														  //relative la sist de referinta
+}													  
 
 Part::~Part()
 {
