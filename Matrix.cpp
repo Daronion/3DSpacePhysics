@@ -61,7 +61,7 @@ Matrix Matrix::operator*(Matrix b) {
 	float sum;
 	if (this->columns != b.rows)
 	{
-		std::cout << ("ERROR: The number columns of Matrix1  != number of rows in Matrix2!");
+		std::cout << ("ERROR: The number columns of this  != number of rows in Matrix2!");
 		terminate();
 	}
 	Matrix result(this->rows, b.columns);
@@ -82,28 +82,21 @@ Matrix Matrix::operator*(Matrix b) {
 	return result;
 }
 
-Matrix Matrix::operator*(float scalar) {
-	for (int i=0; i < this->rows; i++)
-		for (int j = 0; j < this->columns; j++)
-		{
-			this->f[i][j] = scalar*this->f[i][j];
-		}
-
-	return *this;
-}
-
-Vector3 Matrix::operator*(Vector3 vect) {
-	if (!(this->rows == 3 || this->columns == 3))
+Vector3 Matrix::operator*(Vector3 other)
+{
+	if (columns != 3)
 	{
-		std::cout << ("ERROR: Not a 3x3 rotation matrix");
+		std::cout << ("ERROR: The number columns of this  != number of rows in Vector3!");
 		terminate();
 	}
-	Vector3 result;
-	vect.toString();
-	result.f.x = this->f[0][0] * vect.f.x + this->f[0][1] * vect.f.y + this->f[0][2] * vect.f.z;
-	result.f.y = this->f[1][0] * vect.f.x + this->f[1][1] * vect.f.y + this->f[1][2] * vect.f.z;
-	result.f.z = this->f[2][0] * vect.f.x + this->f[2][1] * vect.f.y + this->f[2][2] * vect.f.z;
+	Vector3 result(0,0,0);
 
+	for (int i = 0; i < 3; i++)
+	{
+		result.f.x = f[0][0] * other.f.x + f[0][1] * other.f.y + f[0][2] * other.f.z;
+		result.f.y = f[1][0] * other.f.x + f[1][1] * other.f.y + f[1][2] * other.f.z;
+		result.f.z = f[2][0] * other.f.x + f[2][1] * other.f.y + f[2][2] * other.f.z;
+	}
 	return result;
 }
 

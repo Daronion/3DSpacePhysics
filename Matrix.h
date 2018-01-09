@@ -16,8 +16,7 @@ public:
 	Matrix operator+(Matrix);
 	Matrix operator-(Matrix);
 	Matrix operator*(Matrix);
-	Matrix operator*(float);		//Inmultirea unei matrice cu un scalar, in ordinea aceasta;
-	Vector3 operator*(Vector3);		//Inmultiea unei matrice 3x3 cu un Vector3, cu rezultatul tot un Vector3;
+	Vector3 operator*(Vector3);   //pt inmultire cu Vectori3
 	Matrix operator^(unsigned int);
 	Matrix& operator=(const Matrix);
 
