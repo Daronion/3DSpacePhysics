@@ -1,13 +1,12 @@
 #include "Part.h"
-#include "Matrix.h"
 #include <time.h>
 #include <Windows.h>
+#include <math.h>
 #include <thread>
 #include <utility>
 #include <vector>
-#include <math.h>
-
-#define PI 3.14159265
+#include "structs.h"
+#include "Moteur.h"
 
 using namespace std;
 
@@ -21,9 +20,9 @@ Part::Part()
 	mass = 1;
 	momentOfInertia = 1;
 	Acc = Vector3(0, 0, -9.81);
-	LastRotatedForce = Vector3(0, 0, 0);
+	ModifyingAcc = Vector3(0, 0, -9.81);
 }
-//different Constructors
+
 Part::Part(Vector3 pos, float given_mass)
 {
 	Position = pos;
@@ -36,11 +35,10 @@ Part::Part(Vector3 pos, float given_mass)
 	momentOfInertia = 1;
 
 	Acc = Vector3(0, 0, -9.81);
-	LastRotatedForce = Vector3(0, 0, 0);
-	LastRotatedForce2 = Vector3(0, 0, 0);
-	LastRotatedTorque2 = Vector3(0, 0, 0);
+	ModifyingAcc = Vector3(0, 0, -9.81);
 }
-Part::Part(Vector3 pos, float given_mass,float given_moi)
+
+Part::Part(Vector3 pos, float given_mass, float given_moi)
 {
 	Position = pos;
 	Rotation = Vector3(0, 0, 0);
@@ -51,11 +49,8 @@ Part::Part(Vector3 pos, float given_mass,float given_moi)
 	mass = given_mass;
 	momentOfInertia = given_moi;
 
-	Acc = Vector3(0, 0, -9.81);
-	LastRotatedForce = Vector3(0, 0, 0);
-	LastRotatedForce2 = Vector3(0, 0, 0);
-	LastRotatedTorque2 = Vector3(0, 0, 0);
-
+	Acc = Vector3(0, 0, 0);
+	ModifyingAcc = Vector3(0, 0, -9.81);
 }
 Part::Part(float given_mass)
 {
@@ -68,473 +63,7 @@ Part::Part(float given_mass)
 	AngVel = Vector3(0, 0, 0);
 	Speed = Vector3(0, 0, 0);
 	Acc = Vector3(0, 0, -9.81);
-	LastRotatedForce = Vector3(0, 0, 0);
-	LastRotatedForce2 = Vector3(0, 0, 0);
-	LastRotatedTorque2 = Vector3(0, 0, 0);
-}
-
-void Part::rotationUpdater()
-{
-	Rotation.f.x = fmod(Rotation.f.x, 2 * PI);
-	Rotation.f.y = fmod(Rotation.f.y, 2 * PI);
-	Rotation.f.z = fmod(Rotation.f.z, 2 * PI);
-	if (Rotation.f.x < 0)
-		Rotation.f.x += 2 * PI;
-	if (Rotation.f.y < 0)
-		Rotation.f.y += 2 * PI;
-	if (Rotation.f.z < 0)
-		Rotation.f.z += 2 * PI;
-}
-
-
-void Part::addForce(Vector3 force)
-{
-	setAcc(getAcc() + force / mass);
-}
-
-void Part::addAttachedForce(Vector3 force)
-{
-	addForce(LastRotatedForce.neg());
-
-	Vector3 RotatedForce;
-	double A = getRotation().f.x;
-	double B = getRotation().f.y;
-	double C = getRotation().f.z;
-	double cosA = cos(A);
-	double sinA = sin(A);
-	double cosB = cos(B);
-	double sinB = sin(B);
-	double cosC = cos(C);
-	double sinC = sin(C);
-
-	RotatedForce.f.x = force.f.x * cosB * cosC -
-					   force.f.y * cosB * cosC +
-					   force.f.z * sinB;
-	RotatedForce.f.y = force.f.x * (sinA*sinB*cosC + cosA*sinC) +
-					   force.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-					   force.f.z * sinA*cosB;
-	RotatedForce.f.z = force.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-					   force.f.y * (cosA*sinB*sinC + sinA*cosC) +
-					   force.f.z * cosA*cosB;
-
-	//std::cout<<"** ROTF: "<<RotatedForce.toString();
-
-	addForce(RotatedForce);
-	LastRotatedForce = RotatedForce;
-}
-// serveste doar ca un blueprint pt Motoare
-void Part::addUnevenAttachedForce(Vector3 force, Vector3 distance)
-{
-	//std::cout << "\r";
-	addForce(LastRotatedForce2.neg());
-	addTorque(LastRotatedTorque2.neg());
-
-	Vector3 RotatedForce;
-	Vector3 RotatedDistance;
-	double A = getRotation().f.x;
-	double B = getRotation().f.y;
-	double C = getRotation().f.z;
-	double cosA = cos(A);
-	double sinA = sin(A);
-	double cosB = cos(B);
-	double sinB = sin(B);
-	double cosC = cos(C);
-	double sinC = sin(C);
-
-	RotatedForce.f.x = force.f.x * cosB * cosC -
-					   force.f.y * cosB * sinC +
-					   force.f.z * sinB;
-	RotatedForce.f.y = force.f.x * (sinA*sinB*cosC + cosA*sinC) +
-					   force.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-					   force.f.z * sinA*cosB;
-	RotatedForce.f.z = force.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-					   force.f.y * (cosA*sinB*sinC + sinA*cosC) +
-					   force.f.z * cosA*cosB;
-
-	RotatedDistance.f.x = distance.f.x * cosB * cosC -
-						  distance.f.y * cosB * sinC +
-						  distance.f.z * sinB;
-	RotatedDistance.f.y = distance.f.x * (sinA*sinB*cosC + cosA*sinC) +
-						  distance.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-						  distance.f.z * sinA*cosB;
-	RotatedDistance.f.z = distance.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-						  distance.f.y * (cosA*sinB*sinC + sinA*cosC) +
-						  distance.f.z * cosA*cosB;
-
-	Vector3 RotatedTorque = (RotatedForce^RotatedDistance);
-
-	addForce(RotatedForce);
-	addTorque(RotatedTorque);
-
-	LastRotatedForce2 = RotatedForce;
-	LastRotatedTorque2 = RotatedTorque;
-}  
-
-void Part::addUnevenForce(Vector3 force, Vector3 distance) // distance - dintre originea fortei si centrul obiectului
-{
-	addForce(force);
-	//setAcc(getAcc() + force / mass);
-	addTorque(force ^ distance);
-}
-
-void Part::addTorque(Vector3 torque)
-{
-	setAngAcc(getAngAcc() + torque / momentOfInertia);
-}
-
-//Drone Motors
-
-void Part::Motor1(Vector3 force)
-{
-	Vector3 distance = Vector3(0,1,0);
-
-	addForce(LRF1.neg());
-	addTorque(LRT1.neg());
-
-	Vector3 RotatedForce;
-	Vector3 RotatedDistance;
-	double A = getRotation().f.x;
-	double B = getRotation().f.y;
-	double C = getRotation().f.z;
-	double cosA = cos(A);
-	double sinA = sin(A);
-	double cosB = cos(B);
-	double sinB = sin(B);
-	double cosC = cos(C);
-	double sinC = sin(C);
-
-	RotatedForce.f.x = force.f.x * cosB * cosC -
-		force.f.y * cosB * sinC +
-		force.f.z * sinB;
-	RotatedForce.f.y = force.f.x * (sinA*sinB*cosC + cosA*sinC) +
-		force.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-		force.f.z * sinA*cosB;
-	RotatedForce.f.z = force.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-		force.f.y * (cosA*sinB*sinC + sinA*cosC) +
-		force.f.z * cosA*cosB;
-
-	RotatedDistance.f.x = distance.f.x * cosB * cosC -
-		distance.f.y * cosB * sinC +
-		distance.f.z * sinB;
-	RotatedDistance.f.y = distance.f.x * (sinA*sinB*cosC + cosA*sinC) +
-		distance.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-		distance.f.z * sinA*cosB;
-	RotatedDistance.f.z = distance.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-		distance.f.y * (cosA*sinB*sinC + sinA*cosC) +
-		distance.f.z * cosA*cosB;
-
-	Vector3 RotatedTorque = (RotatedForce^RotatedDistance);
-
-	addForce(RotatedForce);
-	addTorque(RotatedTorque);
-
-	LRF1 = RotatedForce;
-	LRT1 = RotatedTorque;
-}
-
-void Part::Motor2(Vector3 force)
-{
-	Vector3 distance = Vector3(0, -1, 0);
-
-	addForce(LRF2.neg());
-	addTorque(LRT2.neg());
-
-	Vector3 RotatedForce;
-	Vector3 RotatedDistance;
-	double A = getRotation().f.x;
-	double B = getRotation().f.y;
-	double C = getRotation().f.z;
-	double cosA = cos(A);
-	double sinA = sin(A);
-	double cosB = cos(B);
-	double sinB = sin(B);
-	double cosC = cos(C);
-	double sinC = sin(C);
-
-	RotatedForce.f.x = force.f.x * cosB * cosC -
-		force.f.y * cosB * sinC +
-		force.f.z * sinB;
-	RotatedForce.f.y = force.f.x * (sinA*sinB*cosC + cosA*sinC) +
-		force.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-		force.f.z * sinA*cosB;
-	RotatedForce.f.z = force.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-		force.f.y * (cosA*sinB*sinC + sinA*cosC) +
-		force.f.z * cosA*cosB;
-
-	RotatedDistance.f.x = distance.f.x * cosB * cosC -
-		distance.f.y * cosB * sinC +
-		distance.f.z * sinB;
-	RotatedDistance.f.y = distance.f.x * (sinA*sinB*cosC + cosA*sinC) +
-		distance.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-		distance.f.z * sinA*cosB;
-	RotatedDistance.f.z = distance.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-		distance.f.y * (cosA*sinB*sinC + sinA*cosC) +
-		distance.f.z * cosA*cosB;
-
-	Vector3 RotatedTorque = (RotatedForce^RotatedDistance);
-
-	addForce(RotatedForce);
-	addTorque(RotatedTorque);
-
-	LRF2 = RotatedForce;
-	LRT2 = RotatedTorque;
-}
-
-void Part::Motor3(Vector3 force)
-{
-	Vector3 distance = Vector3(1, 0, 0);
-
-	addForce(LRF3.neg());
-	addTorque(LRT3.neg());
-
-	Vector3 RotatedForce;
-	Vector3 RotatedDistance;
-	double A = getRotation().f.x;
-	double B = getRotation().f.y;
-	double C = getRotation().f.z;
-	double cosA = cos(A);
-	double sinA = sin(A);
-	double cosB = cos(B);
-	double sinB = sin(B);
-	double cosC = cos(C);
-	double sinC = sin(C);
-
-	RotatedForce.f.x = force.f.x * cosB * cosC -
-		force.f.y * cosB * sinC +
-		force.f.z * sinB;
-	RotatedForce.f.y = force.f.x * (sinA*sinB*cosC + cosA*sinC) +
-		force.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-		force.f.z * sinA*cosB;
-	RotatedForce.f.z = force.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-		force.f.y * (cosA*sinB*sinC + sinA*cosC) +
-		force.f.z * cosA*cosB;
-
-	RotatedDistance.f.x = distance.f.x * cosB * cosC -
-		distance.f.y * cosB * sinC +
-		distance.f.z * sinB;
-	RotatedDistance.f.y = distance.f.x * (sinA*sinB*cosC + cosA*sinC) +
-		distance.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-		distance.f.z * sinA*cosB;
-	RotatedDistance.f.z = distance.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-		distance.f.y * (cosA*sinB*sinC + sinA*cosC) +
-		distance.f.z * cosA*cosB;
-
-	Vector3 RotatedTorque = (RotatedForce^RotatedDistance);
-
-	addForce(RotatedForce);
-	addTorque(RotatedTorque);
-
-	LRF3 = RotatedForce;
-	LRT3 = RotatedTorque;
-}
-
-void Part::Motor4(Vector3 force)
-{
-	Vector3 distance = Vector3(-1, 0, 0);
-
-	addForce(LRF4.neg());
-	addTorque(LRT4.neg());
-
-	Vector3 RotatedForce;
-	Vector3 RotatedDistance;
-	double A = getRotation().f.x;
-	double B = getRotation().f.y;
-	double C = getRotation().f.z;
-	double cosA = cos(A);
-	double sinA = sin(A);
-	double cosB = cos(B);
-	double sinB = sin(B);
-	double cosC = cos(C);
-	double sinC = sin(C);
-
-	RotatedForce.f.x = force.f.x * cosB * cosC -
-		force.f.y * cosB * sinC +
-		force.f.z * sinB;
-	RotatedForce.f.y = force.f.x * (sinA*sinB*cosC + cosA*sinC) +
-		force.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-		force.f.z * sinA*cosB;
-	RotatedForce.f.z = force.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-		force.f.y * (cosA*sinB*sinC + sinA*cosC) +
-		force.f.z * cosA*cosB;
-
-	RotatedDistance.f.x = distance.f.x * cosB * cosC -
-		distance.f.y * cosB * sinC +
-		distance.f.z * sinB;
-	RotatedDistance.f.y = distance.f.x * (sinA*sinB*cosC + cosA*sinC) +
-		distance.f.y * (-sinA*sinB*sinC + cosA*cosC) -
-		distance.f.z * sinA*cosB;
-	RotatedDistance.f.z = distance.f.x * (-cosA*sinB*cosC + sinA*sinC) +
-		distance.f.y * (cosA*sinB*sinC + sinA*cosC) +
-		distance.f.z * cosA*cosB;
-
-	Vector3 RotatedTorque = (RotatedForce^RotatedDistance);
-
-	addForce(RotatedForce);
-	addTorque(RotatedTorque);
-
-	LRF4 = RotatedForce;
-	LRT4 = RotatedTorque;
-}
-
-
-//Drone Movement Functions
-
-void Part::Hover()
-{
-
-	if (getRotation() == Vector3(0, 0, 0)) {
-		if (getSpeed().f.z < 1 && getSpeed().f.z > -1) {
-			Motor1(Vector3(0, 0, getMass()*(double)9.81 / 4));
-					Motor3(Vector3(0, 0, getMass()*(double)9.81 / 4));
-			Motor4(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		}
-		else if (getSpeed().f.z > 1) {
-			Motor1(Vector3(0, 0, getMass()*(double)9.81 / 5));
-			Motor2(Vector3(0, 0, getMass()*(double)9.81 / 5));
-			Motor3(Vector3(0, 0, getMass()*(double)9.81 / 5));
-			Motor4(Vector3(0, 0, getMass()*(double)9.81 / 5));
-		}
-		else if (getSpeed().f.z < -1) {
-			Motor1(Vector3(0, 0, getMass()*(double)9.81 / 3));
-			Motor2(Vector3(0, 0, getMass()*(double)9.81 / 3));
-			Motor3(Vector3(0, 0, getMass()*(double)9.81 / 3));
-			Motor4(Vector3(0, 0, getMass()*(double)9.81 / 3));
-		}
-		bounce = 0;
-			Motor2(Vector3(0, 0, getMass()*(double)9.81 / 4));
-count = 0;
-		l_bounce = 0;
-		moving = 0;
-		return;
-	}
-	else if (getRotation().f.x >  3 * PI / 2 && ( abs(getSpeed().f.y)>abs(getSpeed().f.x) ) ) {
-		cout << "1))3pi2";
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 2 * (2 * PI - getRotation().f.x)*(count + 1)));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 4 * (2 * PI - getRotation().f.x)));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		bounce = 1;
-		moving = 1;
-
-	}
-	else if (getRotation().f.x <  PI / 2 && getRotation().f.x != 0 && (abs(getSpeed().f.y)>abs(getSpeed().f.x)))
-	{
-		cout << "1))pi2";
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 4 * (getRotation().f.x)));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 2 * (getRotation().f.x)*(count + 1)));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		bounce = 2;
-		moving = 1;
-
-	}
-	else if (getRotation().f.y >  3 * PI / 2 && (abs(getSpeed().f.x)>abs(getSpeed().f.y))) {
-		cout << "2))3pi2";
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 4 * (2 * PI - getRotation().f.y)));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 2 * (2 * PI - getRotation().f.y)*(count+1)));
-		bounce = 3;
-		moving = 1;
-
-	}
-	else if (getRotation().f.y <  PI / 2 && (abs(getSpeed().f.x)>abs(getSpeed().f.y)))
-	{
-		cout << "2))pi2";
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 2 * (getRotation().f.y)*(count + 1)));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 4 * (getRotation().f.y)));
-		bounce = 4;
-		moving = 1;
-	}
-
-	if ((getRotation().f.x < PI / 48 || getRotation().f.x > 95 * PI / 48)
-		&& (getRotation().f.y < PI / 48 || getRotation().f.y > 95 * PI / 48) && count > 2)
-	{
-		setAngAcc(Vector3(0, 0, 0));
-		setAngVel(Vector3(0, 0, 0));
-		setRotation(Vector3(0, 0, 0));
-		setSpeed(Vector3(0, 0, 0));
-		setAcc(Vector3(0, 0, -9.81));
-	
-		LRF1 = Vector3(0, 0, 0);
-		LRF2 = Vector3(0, 0, 0);
-		LRF3 = Vector3(0, 0, 0);
-		LRF4 = Vector3(0, 0, 0);
-
-		LRT1 = Vector3(0, 0, 0);
-		LRT2 = Vector3(0, 0, 0);
-		LRT3 = Vector3(0, 0, 0);
-		LRT4 = Vector3(0, 0, 0);
-
-		moving = 0;
-	}
-
-	//if (getSpeed().f.z < 1  && getSpeed().f.z > -1 && moving == 0) {
-	//	
-	//	setAcc(Vector3(0, 0, -9.81));
-	//	setSpeed(Vector3(getSpeed().f.x, getSpeed().f.y, 0));
-	//	cout << "***";
-
-	//}
-
-	if (l_bounce != bounce)
-		count++;
-	l_bounce = bounce;
-
-}
-
-void Part::Pitch(bool front)
-{
-	if (front) {
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 3));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 4));
-	}
-	else {
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 3));
-	}
-}
-
-void Part::Roll(bool right)
-{
-	if (right) {
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 3));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 4));
-	}
-	else {
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 3));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 4));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 4));
-	}
-}
-
-void Part::Lift(bool up)
-{
-	if (up) {
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 3));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 3));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 3));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 3));
-	}
-	else {
-		Motor1(Vector3(0, 0, getMass()*(double)9.81 / 5));
-		Motor2(Vector3(0, 0, getMass()*(double)9.81 / 5));
-		Motor3(Vector3(0, 0, getMass()*(double)9.81 / 5));
-		Motor4(Vector3(0, 0, getMass()*(double)9.81 / 5));
-	}
-}
-
-Part::~Part()
-{
+	ModifyingAcc = Vector3(0, 0, -9.81);
 }
 
 //Accessors
@@ -542,11 +71,6 @@ Part::~Part()
 float Part::getMass()
 {
 	return mass;
-}
-
-float Part::getMoI()
-{
-	return momentOfInertia;
 }
 
 Vector3 Part::getPosition()
@@ -579,16 +103,16 @@ Vector3 Part::getAcc()
 	return Acc;
 }
 
+Vector3 Part::getModifyingAcc()
+{
+	return ModifyingAcc;
+}
+
 //Mutators
 
 void Part::setMass(float g_mass)
 {
 	mass = g_mass;
-}
-
-void Part::setMoI(float g_MoI)
-{
-	momentOfInertia = g_MoI;
 }
 
 void Part::setPosition(Vector3 g_pos)
@@ -616,7 +140,84 @@ void Part::setSpeed(Vector3 g_speed)
 	Speed = g_speed;
 }
 
+float Part::module(Vector3 vec)
+{
+	return cbrt(pow(vec.f.x,3) + pow(vec.f.y,3) + pow(vec.f.z,3));        //calculeaza modulul unui vector de 3
+}
+
+void Part::setModifyingAcc(Vector3 rotation)
+{
+	float modul;
+	rotation = getRotation();
+	if (getAcc().f.z <= 9.81 && getPosition().f.z<=0)
+	{
+		modul = module(Vector3(0, 0, 0));
+	}
+	else
+	{
+		modul = module(getAcc());
+	}
+	//float a = modul*(sin(Rotation.f.y)*sin(Rotation.f.x) + cos(Rotation.f.x)*sin(Rotation.f.y));
+	//float b = modul*sin(Rotation.f.x)*cos(Rotation.f.y);				//acceleratia care se modifica pe axe
+	//float c = modul*cos(Rotation.f.y)*cos(Rotation.f.x) - 9.81;
+	float a = modul*(sin(Rotation.f.x)*cos(Rotation.f.y)*sin(Rotation.f.z) + cos(Rotation.f.x)*sin(Rotation.f.y)*cos(Rotation.f.z));
+	float b = modul*(sin(Rotation.f.x)*cos(Rotation.f.y)*cos(Rotation.f.z) + cos(Rotation.f.x)*sin(Rotation.f.y)*sin(Rotation.f.z));
+	float c = modul*cos(Rotation.f.y)*cos(Rotation.f.x) -9.81;
+	Vector3 newAcc(a, b, c);
+	ModifyingAcc = newAcc;
+}
+
 void Part::setAcc(Vector3 g_acc)
 {
 	Acc = g_acc;
+}
+
+void Part::addForce(Vector3 force)
+{
+	setAcc(getAcc() + force / mass);
+}
+
+void Part::addUnevenForce(Vector3 force, Vector3 distance) // distance - dintre originea fortei si centrul obiectului
+{
+	setAcc(getAcc() + force / mass);
+	addTorque(force ^ distance);
+}
+
+void Part::addTorque(Vector3 torque)
+{
+	setAngAcc(getAngAcc() + torque / momentOfInertia);
+}
+
+void Part::addTorqueZ(Vector3 force, Vector3 distance)
+{
+	int k;
+	if (distance.f.x != 0) k = 1;
+	else if (distance.f.y != 0) k = 2;
+	Vector3 torque(0, 0, pow((-1),k) * module(force));           //**module(force)** trebuie modificat in functie
+	setAngAcc(getAngAcc() + torque / momentOfInertia);			//de o formula pt calcularea mom de rotatie
+}
+
+void Part::addAttachedForce(Vector3 force,Vector3 distance)
+{
+	addTorque(force ^ distance);
+	addTorqueZ(force,distance);
+	setAcc(getAcc() + force/mass);							  //am adaugat moment in jurul axei Oz;
+	setModifyingAcc(Rotation);// = getModifyingAcc() + getAcc();
+	//motors[i] = motor;
+	//motors[i].setCoord(motor.getCoord());
+	//motors[i].setForce(force);
+}
+
+Vector3 Part::rotmatrixprod(Vector3 angvel, Vector3 rot)
+{
+	Vector3 l1(cos(rot.f.y), 0, -cos(rot.f.x)*sin(rot.f.y));    //am construit matricea de rotatie in functie de unghiurile
+	Vector3 l2(0, 1, sin(rot.f.x));                         //de rotatie
+	Vector3 l3(sin(rot.f.y), 0, cos(rot.f.x)*cos(rot.f.y));
+	Vector3 prod(l1 | angvel, l2 | angvel, l3 | angvel);		  //operatorul ** definit in structs.h sper ca bine
+	return prod;											//vectorul rezultat contine vitezele unghiulare 
+														  //relative la sist de referinta
+}													  
+
+Part::~Part()
+{
 }

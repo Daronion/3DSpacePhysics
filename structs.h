@@ -1,15 +1,17 @@
-#pragma once
+#ifndef STRUCTS_H
+#define STRUCTS_H
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <thread>
+#include <math.h>
 
 struct Vector3Fields
 {
 	float x, y, z;
 
-	Vector3Fields(float xg=0, float yg=0, float zg=0) {
+	Vector3Fields(float xg = 0, float yg = 0, float zg = 0) {
 		x = xg;
 		y = yg;
 		z = zg;
@@ -20,7 +22,7 @@ struct Vector3Fields
 
 union Vector3 {
 	Vector3Fields f; // f de la fields
-	float raw[3];
+	int raw[3];
 
 	//Constructors
 	Vector3() {
@@ -40,11 +42,11 @@ union Vector3 {
 		output << std::setprecision(2) << std::fixed << f.x << " " << f.y << " " << f.z << " ";
 		return output.str();
 	}
-	
+
 	//Operatori
 
 	Vector3 operator+(const Vector3& other) {
-		Vector3 result(0, 0, 0);          
+		Vector3 result(0, 0, 0);
 
 		result.f.x = other.f.x + f.x;
 		result.f.y = other.f.y + f.y;
@@ -73,6 +75,12 @@ union Vector3 {
 		return result;
 	}
 
+	float operator|(const Vector3& other) {
+		float result = 0;
+		result = (f.x * other.f.x) + (f.y * other.f.y) + (f.z * other.f.y);
+		return result;//(sper ca e bine)
+	}																		   //am creat un operator util pt inmultiri
+																			   //de matrice(aduna cele 3 produse)
 	Vector3 operator/(const Vector3& other) {
 		Vector3 result(0, 0, 0);
 
@@ -103,6 +111,15 @@ union Vector3 {
 		return result;
 	}
 
+	Vector3 operator-=(const double& other)
+	{
+		Vector3 result(0, 0, 0);
+		if (abs(f.x) >= other) f.x -= f.x/abs(f.x)*other;
+		if (abs(f.y) >= other) f.y -= f.y / abs(f.y)*other;
+		if (abs(f.z) >= other) f.z -= f.z / abs(f.z)*other;
+		return *this;
+	}
+
 	Vector3 operator/(const double& other) {
 		Vector3 result(0, 0, 0);
 
@@ -120,15 +137,10 @@ union Vector3 {
 		return *this;
 	}
 
-	int operator==(const Vector3 other) {
-		if (f.x == other.f.x && f.y == other.f.y && f.z == other.f.z)
-			return true;
-		else
-			return false;
-	}
+
 
 	Vector3 add(Vector3 other) {             //  -- adauga vectorului3 curent un alt vector, returneaza un vector3 nou.
-		Vector3 result(0,0,0);                 //Ex: c = a.add(b)     , abc Vectori3 
+		Vector3 result(0, 0, 0);                 //Ex: c = a.add(b)     , abc Vectori3 
 
 		result.f.x = other.f.x + f.x;
 		result.f.y = other.f.y + f.y;
@@ -137,7 +149,7 @@ union Vector3 {
 		return result;
 	}
 
-	Vector3 subtract(Vector3 other){
+	Vector3 subtract(Vector3 other) {
 		Vector3 result(0, 0, 0);
 
 		result.f.x = other.f.x + f.x;
@@ -153,3 +165,5 @@ union Vector3 {
 	}
 
 };
+
+#endif // STRUCTS_H
